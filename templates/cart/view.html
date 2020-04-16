@@ -1,0 +1,22 @@
+{% block content %}
+
+This is the template
+
+<table>
+<thead>
+    <th>Item</th>
+    <th>Price</th>
+</thead>
+<tfoot>
+    <tr>
+        <td></td>
+        <td>Cart Total: {{cart.total}}</td>
+    </tr>
+</tfoot>
+    {% for item in cart.products.all %}
+    <tr><td>{{ item }}</td><td>{{ item.price }}</td><td> <a href='{% url "update_cart" item.slug %}'>Remove from Cart</a></td></tr>
+    {% endfor %}
+
+</table>
+
+{% endblock %}

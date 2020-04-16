@@ -1,0 +1,8 @@
+<section>
+    <h3>{{product.title}}</h3>
+    <div>Price: £{{product.price}}</div>
+    <div>
+        Product Description: {{product.description}}
+    </div>
+    <a href='{% url "update_cart" product.slug %}'>Add to Cart</a>
+  </section>
