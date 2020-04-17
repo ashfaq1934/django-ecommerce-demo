@@ -1,6 +1,8 @@
 {% block content %}
 
-This is the template
+{% if empty %}
+   <h1>{{empty_message}}</h1>
+{% else %}
 
 <table>
 <thead>
@@ -18,5 +20,5 @@ This is the template
     {% endfor %}
 
 </table>
-
+{% endif %}
 {% endblock %}
