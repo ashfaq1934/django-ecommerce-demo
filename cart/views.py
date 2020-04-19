@@ -40,7 +40,7 @@ def update_cart(request, slug, qty):
         pass
     cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
 
-    if qty == 0:
+    if int(qty) == 0:
         cart_item.delete()
     else:
         cart_item.quantity = qty
