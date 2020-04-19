@@ -4,5 +4,10 @@
     <div>
         Product Description: {{product.description}}
     </div>
-    <a href='{% url "update_cart" product.slug 20 %}'>Add to Cart</a>
+    <a href='{% url "update_cart" product.slug %}?qty=20'>Add to Cart</a>
+    <form method="GET" action='{% url "update_cart" product.slug %}'>
+        <input name="qty" type="number" placeholder="1" />
+        <input name="attr" type="text" />
+        <input value="Add to Cart" type="submit" />
+    </form>
   </section>
