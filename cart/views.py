@@ -1,7 +1,7 @@
 from django.shortcuts import render, HttpResponseRedirect
 from django.urls import reverse
 
-from .models import Cart
+from .models import Cart, CartItem
 from product.models import Product
 
 def view(request):
@@ -20,7 +20,7 @@ def view(request):
     template = 'cart/view.html'
     return render(request, template, context)
 
-def update_cart(request, slug):
+def update_cart(request, slug, qty):
     request.session.set_expiry(120000)
     try:
         the_id = request.session['cart_id']
@@ -38,16 +38,25 @@ def update_cart(request, slug):
 
     except:
         pass
-    if not product in cart.products.all():
-        cart.products.add(product)
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+
+    if qty == 0:
+        cart_item.delete()
     else:
-        cart.products.remove(product)
+        cart_item.quantity = qty
+        cart_item.save()
+
+    # if not cart_item in cart.items.all():
+    #     cart.items.add(cart_item)
+    # else:
+    #     cart.items.remove(cart_item)
     
     new_total = 0.00
-    for item in cart.products.all():
-        new_total = float(item.price)
+    for item in cart.cartitem_set.all():
+        line_total = float(item.product.price) * item.quantity
+        new_total += line_total
     
-    request.session['items_total'] = cart.products.count()
+    request.session['items_total'] = cart.cartitem_set.count()
     cart.total = new_total
     cart.save()
 
