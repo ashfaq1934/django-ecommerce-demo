@@ -7,7 +7,21 @@
     <a href='{% url "update_cart" product.slug %}?qty=20'>Add to Cart</a>
     <form method="GET" action='{% url "update_cart" product.slug %}'>
         <input name="qty" type="number" placeholder="1" />
-        <input name="attr" type="text" />
+        {% if product.variation_set.colours %}
+        <select name="colour">
+        {% for item in product.variation_set.colours %}
+            <option value="{{item.title|lower}}">{{item.title|capfirst}}</option>
+        {% endfor %}
+        </select>
+        {% endif %}
+
+        {% if product.variation_set.sizes %}
+        <select name="size">
+        {% for item in product.variation_set.sizes %}
+            <option value="{{item.title|lower}}">{{item.title|capfirst}}</option>
+        {% endfor %}
+        </select>
+        {% endif %}
         <input value="Add to Cart" type="submit" />
     </form>
   </section>

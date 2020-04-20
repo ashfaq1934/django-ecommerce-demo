@@ -15,3 +15,35 @@ class Product(models.Model):
     def get_price(self):
         return self.price
 
+
+class VariationManager(models.Manager):
+
+    def all(self):
+        return super(VariationManager, self).filter(active=True)
+
+    def sizes(self):
+        return self.all().filter(category='size')
+    
+    def colours(self):
+        return self.all().filter(category='colour')
+
+
+VAR_CATEGORIES = (
+    ('size', 'size'),
+    ('colour', 'colour'),
+)
+
+class Variation(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    title = models.CharField(max_length=300)
+    category = models.CharField(max_length=100, choices=VAR_CATEGORIES, default='size')
+    price = models.DecimalField(decimal_places=2, max_digits=100, default=0.00)
+    updated = models.DateTimeField(auto_now_add=False, auto_now=True)
+    active = models.BooleanField(default=True)
+
+    objects = VariationManager()
+
+    def __str__(self):
+        return self.title
+
+

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Product
+from .models import Product, Variation
 
 class ProductAdmin(admin.ModelAdmin):
     class Meta:
@@ -8,3 +8,4 @@ class ProductAdmin(admin.ModelAdmin):
     
 
 admin.site.register(Product, ProductAdmin)
+admin.site.register(Variation)
