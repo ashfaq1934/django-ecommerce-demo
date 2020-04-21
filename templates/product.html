@@ -4,8 +4,8 @@
     <div>
         Product Description: {{product.description}}
     </div>
-    <a href='{% url "update_cart" product.slug %}?qty=20'>Add to Cart</a>
-    <form method="GET" action='{% url "update_cart" product.slug %}'>
+    <form method="POST" action='{% url "add_to_cart" product.slug %}'>
+        {% csrf_token %}
         <input name="qty" type="number" placeholder="1" />
         {% if product.variation_set.colours %}
         <select name="colour">
