@@ -6,22 +6,24 @@
     </div>
     <form method="POST" action='{% url "add_to_cart" product.slug %}'>
         {% csrf_token %}
-        <input name="qty" type="number" placeholder="1" />
-        {% if product.variation_set.colours %}
+        <input name="qty" type="number" placeholder="1" value="1" />
+        {% if product.colour_set %}
         <select name="colour">
-        {% for item in product.variation_set.colours %}
-            <option value="{{item.title|lower}}">{{item.title|capfirst}}</option>
+        {% for item in product.colour_set.all %}
+            <option value="{{item.colour|lower}}">{{item.colour|capfirst}}</option>
         {% endfor %}
         </select>
         {% endif %}
 
-        {% if product.variation_set.sizes %}
+        {% if product.size_set %}
         <select name="size">
-        {% for item in product.variation_set.sizes %}
-            <option value="{{item.title|lower}}">{{item.title|capfirst}}</option>
+        {% for item in product.size_set.all  %}
+            <option value="{{item.size|lower}}">{{item.size|capfirst}}</option>
         {% endfor %}
         </select>
         {% endif %}
+
+
         <input value="Add to Cart" type="submit" />
     </form>
   </section>
