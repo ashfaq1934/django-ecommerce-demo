@@ -2,7 +2,7 @@ from django.shortcuts import render, HttpResponseRedirect
 from django.urls import reverse
 import json
 from .models import Cart, CartItem
-from product.models import Product, Variation
+from product.models import Product, Colour, Size
 
 def view(request):
     try:
@@ -71,7 +71,8 @@ def add_to_cart(request, slug):
     except:
         pass
 
-    product_variations = []
+    product_colours = []
+    product_sizes = []
     
     if request.method == 'POST':
         qty = request.POST['qty']
@@ -79,16 +80,20 @@ def add_to_cart(request, slug):
             key = item
             value = request.POST[key]
             try:
-                variation = Variation.objects.get(product=product, category__iexact=key, title__iexact=value)
-                product_variations.append(variation)
+                colour = Colour.objects.get(product=product, colour__iexact=key, title__iexact=value)
+                size = Size.objects.get(product=product, size__iexact=key, title__iexact=value)
+                product_colours.append(colour)
+                product_sizes.append(size)
             except:
                 pass
 
         #create the cart item based on the session's cart id and the product chosen
         cart_item = CartItem.objects.create(cart=cart, product=product)
         #otherwise, set the quantity and save the item
-        if len(product_variations) > 0:
-                cart_item.variations.add(*product_variations)
+        if len(product_colours) > 0:
+            cart_item.colours.add(*product_colours)
+        if len(product_sizes) > 0:
+            cart_item.sizes.add(*product_sizes)
         cart_item.quantity = qty
         cart_item.save()
         return HttpResponseRedirect(reverse("cart"))
