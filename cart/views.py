@@ -6,20 +6,20 @@ from product.models import Product, Variation
 
 def view(request):
     try:
-        #get the session for a user's cart
+        # get the session for a user's cart
         the_id = request.session['cart_id']
+        # if the session was created and the id was defined and the cart items retrieved, display them
+        cart = Cart.objects.get(id=the_id)
     except:
         the_id = None
     if the_id:
-        #if the session was created and the id was defined and the cart items retrieved, display them
-        cart = Cart.objects.get(id=the_id)
         new_total = 0.00
         for item in cart.cartitem_set.all():
             line_total = float(item.product.price) * item.quantity
             new_total += line_total
             
         request.session['items_total'] = cart.cartitem_set.count()
-        #set the cart's total as the new total by gettingthe count
+        # set the cart's total as the new total by gettingthe count
         cart.total = new_total
         cart.save()
         # success message
