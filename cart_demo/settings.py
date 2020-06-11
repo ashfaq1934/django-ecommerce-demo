@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cart',
     'product',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -120,3 +121,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STRIPE_SECRET_KEY = "sk_test_51GsbFpACAWstbpLSOpUlLrhJP6wrvlmLpXq7kJCHom90VaxghxaaPL7CslKlUCSD77oEuu4VltPMX6zWqZRM0AtD00rxdA2uGH"
+
+STRIPE_PUBLISHABLE_KEY = "pk_test_51GsbFpACAWstbpLSfcgsnHBN0G7jwXyx2od4cb6ORdunEqCtlXftbL9fonYDw5Vae63QZfebD4CVFWb53vuS6jlY00RcHjOR1E"
