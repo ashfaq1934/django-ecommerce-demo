@@ -1,3 +1,5 @@
+{% extends "base.html" %}
+{% block content %}
 <section>
     <h3>{{product.title}}</h3>
     <div>Price: £{{product.price}}</div>
@@ -25,3 +27,4 @@
         <input value="Add to Cart" type="submit" />
     </form>
   </section>
+  {% endblock %}
