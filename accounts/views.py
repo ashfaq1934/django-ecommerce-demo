@@ -10,6 +10,7 @@ def logout_view(request):
 def login_view(request):
 
     form = LoginForm(request.POST or None)
+    btn = 'Login'
 
     if form.is_valid():
         username = form.cleaned_data.get('username')
@@ -19,6 +20,7 @@ def login_view(request):
 
     context = {
         "form": form,
+        "btn": btn,
     }
     
     template = "form.html"
@@ -27,6 +29,7 @@ def login_view(request):
 def registration_view(request):
 
     form = RegistrationForm(request.POST or None)
+    btn = 'Join'
 
     if form.is_valid():
         # username = form.cleaned_data.get('username')
@@ -39,6 +42,7 @@ def registration_view(request):
 
     context = {
         "form": form,
+        "btn": btn,
     }
     
     template = "form.html"
