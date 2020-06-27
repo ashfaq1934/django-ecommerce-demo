@@ -1,7 +1,23 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from .models import UserAddress
 
 User = get_user_model()
+
+
+class UserAddressForm(forms.ModelForm):
+    class Meta:
+        model = UserAddress
+        fields = [
+            "address",
+            "address2",
+            "city",
+            "country",
+            "postal_code",
+            "phone_number",
+            "billing",
+            "shipping",
+        ]
 
 class LoginForm(forms.Form):
     username = forms.CharField()
