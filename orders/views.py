@@ -33,11 +33,7 @@ def checkout(request):
     except:
         return HttpResponseRedirect(reverse('cart'))
     
-    address_form = UserAddressForm(request.POST or None)
-    if address_form.is_valid():
-        new_address = address_form.save(commit=False)
-        new_address.user = request.user
-        new_address.save()
+    address_form = UserAddressForm()
 
     if new_order.status == "Finished":
         # cart.delete()
