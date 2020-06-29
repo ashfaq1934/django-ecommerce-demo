@@ -1,6 +1,6 @@
-from django.shortcuts import render, HttpResponseRedirect
+from django.shortcuts import render, HttpResponseRedirect, Http404, reverse
 from django.contrib.auth import login, logout, authenticate
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm, RegistrationForm, UserAddressForm
 
 
 def logout_view(request):
@@ -47,3 +47,21 @@ def registration_view(request):
     
     template = "form.html"
     return render(request, template, context)
+
+def add_user_address(request):
+    print(request.GET)
+    try:
+        redirect = request.GET.get("redirect")
+    except:
+        redirect = None
+
+    if request.method == "POST":
+        address_form = UserAddressForm(request.POST)
+        if address_form.is_valid():
+            new_address = address_form.save(commit=False)
+            new_address.user = request.user
+            new_address.save()
+            if redirect is not None:
+                return HttpResponseRedirect(reverse(str(redirect)))
+    else:
+        return Http404
