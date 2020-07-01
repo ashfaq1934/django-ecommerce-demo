@@ -33,7 +33,16 @@ def checkout(request):
     except:
         return HttpResponseRedirect(reverse('cart'))
     
-    address_form = UserAddressForm()
+    try:
+        address_added = request.GET.get('address_added')
+
+    except:
+        address_added = None
+    
+    if address_added is None:
+        address_form = UserAddressForm()
+    else:
+        address_form = None
 
     if new_order.status == "Finished":
         # cart.delete()

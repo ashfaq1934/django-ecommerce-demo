@@ -51,7 +51,7 @@ def registration_view(request):
 def add_user_address(request):
     print(request.GET)
     try:
-        redirect = request.GET.get("redirect")
+        redirect = request.GET.get("next")
     except:
         redirect = None
 
@@ -62,6 +62,6 @@ def add_user_address(request):
             new_address.user = request.user
             new_address.save()
             if redirect is not None:
-                return HttpResponseRedirect(reverse(str(redirect)))
+                return HttpResponseRedirect(reverse(str(redirect))+'?address_added=True')
     else:
         return Http404
