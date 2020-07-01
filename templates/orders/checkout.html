@@ -2,11 +2,47 @@
 
 {% block content %}
 
+{% if address_form %}
 <form method="POST" action='{%url "add_user_address" %}?next=checkout'>{% csrf_token %}
 
 {{ address_form.as_p }}
 
 <input type="submit" class="btn btn-default" value="Add Address"/>
+</form>
+{% endif %}
+
+
+<form method="POST" action="">
+    {% csrf_token %}
+
+{% if current_addresses %}
+<div class="row">
+<div class="col-sm-6">
+<h4>Saved Addresses</h4>
+{% for address in current_addresses %}
+ <input type="radio" name="shipping_address" value="{{ address.id }}" />{{ address.get_address }}<br/>
+{% endfor %}
+</div>
+</div>
+{% endif %}
+
+{% if billing_addresses %}
+<div class="row">
+<div class="col-sm-6">
+<h4>Billing Addresses</h4>
+{% for address in billing_addresses %}
+<input type="radio" name="billing_address" value="{{ address.id }}" /> {{ address.get_address }}<br/>
+{% endfor %}
+</div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-sm-6">
+        <h4>Credit Card Info</h4>
+
+    </div>
+</div>
 
 </form>
 
