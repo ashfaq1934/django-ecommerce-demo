@@ -46,7 +46,6 @@ def checkout(request):
     
     current_addresses = UserAddress.objects.filter(user=request.user)
     billing_addresses = UserAddress.objects.get_billing_addresses(user=request.user)
-    print(billing_addresses)
 
 
     if new_order.status == "Finished":

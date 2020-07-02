@@ -2,6 +2,18 @@ from django.db import models
 from django.conf import settings
 
 
+class UserDefaultAddress(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    shipping = models.ForeignKey("UserAddress", null=True, blank=True,
+                                 on_delete=models.CASCADE,
+                                 related_name="user_address_shipping_default")
+    billing = models.ForeignKey("UserAddress", null=True, blank=True,
+                                on_delete=models.CASCADE,
+                                related_name="user_address_billing_default")
+    def __str__(self):
+        return str(self.user.username)
+
+
 class UserAddressManager(models.Manager):
     def get_billing_addresses(self, user):
         return super(UserAddressManager, self).filter(billing=True).filter(user=user)
@@ -27,6 +39,9 @@ class UserAddress(models.Model):
         return "%s, %s, %s, %s" %(self.address, self.city, self.country, self.postal_code)
 
     objects = UserAddressManager()
+
+    class Meta:
+        ordering = ['-updated', '-timestamp']
 
 
 class UserStripe(models.Model):

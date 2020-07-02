@@ -7,7 +7,7 @@
 
 {{ address_form.as_p }}
 
-<input type="submit" class="btn btn-default" value="Add Address"/>
+<input type="submit" class="btn btn-default" value="Add shipping Address"/>
 </form>
 {% endif %}
 
@@ -18,9 +18,13 @@
 {% if current_addresses %}
 <div class="row">
 <div class="col-sm-6">
-<h4>Saved Addresses</h4>
+<h4>Shipping Addresses</h4>
 {% for address in current_addresses %}
+{% if request.user.userdefaultaddress.shipping.id == address.id %}
+<input type="radio" name="shipping_address" value="{{ address.id }}" checked="checked"/>{{ address.get_address }}<br/>
+{% else %}
  <input type="radio" name="shipping_address" value="{{ address.id }}" />{{ address.get_address }}<br/>
+ {% endif %}
 {% endfor %}
 </div>
 </div>
@@ -31,7 +35,11 @@
 <div class="col-sm-6">
 <h4>Billing Addresses</h4>
 {% for address in billing_addresses %}
-<input type="radio" name="billing_address" value="{{ address.id }}" /> {{ address.get_address }}<br/>
+{% if request.user.userdefaultaddress.billing.id == address.id %}
+<input type="radio" name="billing_address" value="{{ address.id }}" checked="checked"/>{{ address.get_address }}<br/>
+{% else %}
+ <input type="radio" name="billing_address" value="{{ address.id }}" />{{ address.get_address }}<br/>
+ {% endif %}
 {% endfor %}
 </div>
 </div>
