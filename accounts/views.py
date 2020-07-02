@@ -1,6 +1,7 @@
 from django.shortcuts import render, HttpResponseRedirect, Http404, reverse
 from django.contrib.auth import login, logout, authenticate
 from .forms import LoginForm, RegistrationForm, UserAddressForm
+from .models import UserDefaultAddress
 
 
 def logout_view(request):
@@ -49,19 +50,23 @@ def registration_view(request):
     return render(request, template, context)
 
 def add_user_address(request):
-    print(request.GET)
     try:
-        redirect = request.GET.get("redirect")
+        next_page = request.GET.get("next")
     except:
-        redirect = None
+        next_page = None
 
     if request.method == "POST":
-        address_form = UserAddressForm(request.POST)
-        if address_form.is_valid():
-            new_address = address_form.save(commit=False)
+        form = UserAddressForm(request.POST)
+        if form.is_valid():
+            new_address = form.save(commit=False)
             new_address.user = request.user
             new_address.save()
-            if redirect is not None:
-                return HttpResponseRedirect(reverse(str(redirect)))
+            is_default = form.cleaned_data.get("default")
+            if is_default:
+                default_address, created = UserDefaultAddress.objects.get_or_create(user=request.user)
+                default_address.shipping = new_address
+                default_address.save()
+            if next_page is not None:
+                return HttpResponseRedirect(reverse(str(next_page))+'?address_added=True')
     else:
         return Http404
