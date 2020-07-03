@@ -1,11 +1,20 @@
 from django.urls import reverse
 from django.shortcuts import render, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from accounts.forms import UserAddressForm
 from accounts.models import UserAddress
 from cart.models import Cart
 from .models import Order
-from .utils import id_generator
+from .utils import id_generator, generate_client_token
+
+client_token = generate_client_token()
+
+try:
+    stripe_pub = settings.STRIPE_PUBLISHABLE_KEY
+except Exception as e:
+    print(e)
+    raise NotImplementedError(str(e))
 
 
 def orders(request):
@@ -47,6 +56,9 @@ def checkout(request):
     current_addresses = UserAddress.objects.filter(user=request.user)
     billing_addresses = UserAddress.objects.get_billing_addresses(user=request.user)
 
+    if request.method == 'POST':
+        print(request.POST)
+
 
     if new_order.status == "Finished":
         # cart.delete()
@@ -56,7 +68,8 @@ def checkout(request):
     context = {
         "address_form": address_form,
         "current_addresses": current_addresses,
-        "billing_addresses": billing_addresses
+        "billing_addresses": billing_addresses,
+        "client_token": client_token,
         }
     template = "orders/checkout.html"
     return render(request, template, context)
