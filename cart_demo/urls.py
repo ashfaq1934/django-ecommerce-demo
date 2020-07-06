@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.urls import path, re_path
 from cart.views import view, add_to_cart, remove_from_cart
 from product.views import single
-from accounts.views import logout_view, login_view, registration_view, add_user_address
-from orders.views import checkout, orders
+from accounts.views import logout_view, login_view, registration_view
+from orders.views import checkout, orders, order_details
 
 
 urlpatterns = [
@@ -17,5 +17,6 @@ urlpatterns = [
     re_path(r'^accounts/logout/$', logout_view, name='auth_logout'),
     re_path(r'^accounts/login/$', login_view, name='auth_login'),
     re_path(r'^accounts/register/$', registration_view, name='auth_registration'),
-    re_path(r'^add_user_address/$', add_user_address, name='add_user_address'),
+    # re_path(r'^add_user_address/$', add_user_address, name='add_user_address'),
+    re_path(r'^order_details/$', order_details, name='order_details')
 ]

@@ -1,14 +1,12 @@
 from django.urls import reverse
-from django.shortcuts import render, HttpResponseRedirect
+from django.shortcuts import render, HttpResponseRedirect, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from accounts.forms import UserAddressForm
-from accounts.models import UserAddress
+from accounts.models import UserDefaultAddress
 from cart.models import Cart
-from .models import Order
-from .utils import id_generator, generate_client_token
-
-client_token = generate_client_token()
+from .models import Order, OrderDetails
+from .forms import OrderDetailsForm
+from .utils import id_generator, generate_client_token, transact
 
 try:
     stripe_pub = settings.STRIPE_PUBLISHABLE_KEY
@@ -23,7 +21,16 @@ def orders(request):
     return render(request, template, context)
 
 @login_required
-def checkout(request):
+def order_details(request):
+    print(request.POST)
+    try:
+        # get the session for a user's cart
+        the_id = request.session['cart_id']
+        cart = Cart.objects.get(id=the_id)
+    except Cart.DoesNotExist:
+        the_id = None
+        return HttpResponseRedirect(reverse('cart'))
+    
     try:
         # get the session for a user's cart
         the_id = request.session['cart_id']
@@ -43,32 +50,82 @@ def checkout(request):
         return HttpResponseRedirect(reverse('cart'))
     
     try:
-        address_added = request.GET.get('address_added')
+        new_order_details = OrderDetails.objects.get(order=new_order)
+        form = None
 
+    except OrderDetails.DoesNotExist:
+    
+        form = OrderDetailsForm(request.POST or None)
+
+        if form.is_valid():
+            new_order_details = OrderDetails()
+            new_order_details.order = new_order
+            new_order_details.address = form.cleaned_data.get("address")
+            new_order_details.city = form.cleaned_data.get('city')
+            new_order_details.country = form.cleaned_data.get('county')
+            new_order_details.postal_code = form.cleaned_data.get('postal_code')
+            new_order_details.phone_number = form.cleaned_data.get('phone_number')
+            new_order_details.save()
+
+            is_default = form.cleaned_data.get("default")
+            if is_default:
+                try:
+                    default_address = UserDefaultAddress.objects.get(user=request.user)
+                except UserDefaultAddress.DoesNotExist:
+                    default_address = UserDefaultAddress()
+                    default_address.user = request.user
+                    default_address.address = form.cleaned_data.get("address")
+                    default_address.city = form.cleaned_data.get('city')
+                    default_address.country = form.cleaned_data.get('county')
+                    default_address.postal_code = form.cleaned_data.get('postal_code')
+                    default_address.phone_number = form.cleaned_data.get('phone_number')
+                    default_address.save()
+    
     except:
-        address_added = None
-    
-    if address_added is None:
-        address_form = UserAddressForm()
-    else:
-        address_form = None
-    
-    current_addresses = UserAddress.objects.filter(user=request.user)
-    billing_addresses = UserAddress.objects.get_billing_addresses(user=request.user)
+        return HttpResponseRedirect(reverse('cart'))
+
+    template = 'orders/order_details.html'
+    context = {'form': form}
+
+    return render(request, template, context)
+
+
+@login_required
+def checkout(request, **kwargs):
+    client_token = generate_client_token()
+    try:
+        # get the session for a user's cart
+        the_id = request.session['cart_id']
+        cart = Cart.objects.get(id=the_id)
+    except Cart.DoesNotExist:
+        the_id = None
+        return HttpResponseRedirect(reverse('cart'))
+    try:
+        new_order = Order.objects.get(cart=cart)
+    except Order.DoesNotExist:
+        new_order = None
+        return HttpResponseRedirect(reverse('cart'))
 
     if request.method == 'POST':
         print(request.POST)
+        result = transact({
+                'amount': new_order.final_total,
+                'payment_method_nonce': request.POST['payment_method_nonce'],
+                'options': {
+                    "submit_for_settlement": True
+                }
+            })
+
+        if result.is_success or result.transaction:
+            print('it worked')
 
 
     if new_order.status == "Finished":
         # cart.delete()
         del request.session['cart_id']
-        # del request.session['item_total']
+        del request.session['item_total']
 
     context = {
-        "address_form": address_form,
-        "current_addresses": current_addresses,
-        "billing_addresses": billing_addresses,
         "client_token": client_token,
         }
     template = "orders/checkout.html"

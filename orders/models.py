@@ -24,3 +24,14 @@ class Order(models.Model):
 
     def __str__(self):
         return self.order_id
+
+class OrderDetails(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE)
+    address = models.CharField(max_length=120, null=True, blank=True)
+    city = models.CharField(max_length=120, null=True, blank=True)
+    county = models.CharField(max_length=120)
+    postal_code = models.CharField(max_length=120)
+    phone_number = models.CharField(max_length=120)
+
+    def __str__(self):
+        return str(self.order)
