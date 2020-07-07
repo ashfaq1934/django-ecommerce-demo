@@ -26,12 +26,12 @@ class Order(models.Model):
         return self.order_id
 
 class OrderDetails(models.Model):
-    order = models.OneToOneField(Order, on_delete=models.CASCADE)
-    address = models.CharField(max_length=120, null=True, blank=True)
-    city = models.CharField(max_length=120, null=True, blank=True)
-    county = models.CharField(max_length=120)
-    postal_code = models.CharField(max_length=120)
-    phone_number = models.CharField(max_length=120)
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, null=True)
+    address = models.CharField(max_length=120, null=True)
+    city = models.CharField(max_length=120, null=True)
+    county = models.CharField(max_length=120, null=True)
+    postal_code = models.CharField(max_length=120, null=True)
+    phone_number = models.CharField(max_length=120, null=True)
 
     def __str__(self):
         return str(self.order)

@@ -33,10 +33,6 @@ def registration_view(request):
     btn = 'Join'
 
     if form.is_valid():
-        # username = form.cleaned_data.get('username')
-        # password = form.cleaned_data.get('password')
-        # user = authenticate(username=username, password=password, backend='django.contrib.auth.backends.ModelBackend')
-        # login(request, user)
         new_user = form.save(commit=False)
         new_user.first_name = 'Justin'
         new_user.save()

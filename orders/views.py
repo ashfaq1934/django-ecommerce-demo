@@ -8,12 +8,6 @@ from .models import Order, OrderDetails
 from .forms import OrderDetailsForm
 from .utils import id_generator, generate_client_token, transact
 
-try:
-    stripe_pub = settings.STRIPE_PUBLISHABLE_KEY
-except Exception as e:
-    print(e)
-    raise NotImplementedError(str(e))
-
 
 def orders(request):
     context = {}
@@ -38,54 +32,76 @@ def order_details(request):
     except Cart.DoesNotExist:
         the_id = None
         return HttpResponseRedirect(reverse('cart'))
+
+    form = OrderDetailsForm(request.POST or None)
     try:
-        new_order = Order.objects.get(cart=cart)
-    except Order.DoesNotExist:
-        new_order = Order()
-        new_order.cart = cart
-        new_order.user = request.user
-        new_order.order_id = id_generator()
-        new_order.save()
-    except:
-        return HttpResponseRedirect(reverse('cart'))
-    
-    try:
-        new_order_details = OrderDetails.objects.get(order=new_order)
-        form = None
+        exists = True
+        default_address = UserDefaultAddress.objects.get(user=request.user)
+    except UserDefaultAddress.DoesNotExist:
+        exists = False
+        default_address = None
+    print(exists)
+    if request.method == 'POST':
+        try:
+            new_order = Order.objects.get(cart=cart)
+        except Order.DoesNotExist:
+            new_order = Order()
+            new_order.cart = cart
+            new_order.user = request.user
+            new_order.order_id = id_generator()
+            new_order.save()
 
-    except OrderDetails.DoesNotExist:
-    
-        form = OrderDetailsForm(request.POST or None)
+        except:
+            return HttpResponseRedirect(reverse('cart'))
 
-        if form.is_valid():
-            new_order_details = OrderDetails()
-            new_order_details.order = new_order
-            new_order_details.address = form.cleaned_data.get("address")
-            new_order_details.city = form.cleaned_data.get('city')
-            new_order_details.country = form.cleaned_data.get('county')
-            new_order_details.postal_code = form.cleaned_data.get('postal_code')
-            new_order_details.phone_number = form.cleaned_data.get('phone_number')
-            new_order_details.save()
+        
+        
+        try:
+            new_order_details = OrderDetails.objects.get(order=new_order)
+            form = None
 
-            is_default = form.cleaned_data.get("default")
-            if is_default:
-                try:
-                    default_address = UserDefaultAddress.objects.get(user=request.user)
-                except UserDefaultAddress.DoesNotExist:
-                    default_address = UserDefaultAddress()
-                    default_address.user = request.user
-                    default_address.address = form.cleaned_data.get("address")
-                    default_address.city = form.cleaned_data.get('city')
-                    default_address.country = form.cleaned_data.get('county')
-                    default_address.postal_code = form.cleaned_data.get('postal_code')
-                    default_address.phone_number = form.cleaned_data.get('phone_number')
-                    default_address.save()
-    
-    except:
-        return HttpResponseRedirect(reverse('cart'))
+        except OrderDetails.DoesNotExist:
+            # Todo: this code doesn't execute if the default address exists as the form fields 
+            # are replaced with custom form fields with populated data, need to find a way of
+            # populating the form data automatically without creating a custom form in the html markup
+            if form.is_valid():
+                new_order_details = form.save(commit=False)
+                new_order_details.order = new_order
+                new_order_details.address = form.cleaned_data.get("address")
+                new_order_details.city = form.cleaned_data.get('city')
+                new_order_details.country = form.cleaned_data.get('county')
+                new_order_details.postal_code = form.cleaned_data.get('postal_code')
+                new_order_details.phone_number = form.cleaned_data.get('phone_number')
+                new_order_details.save()
+
+                is_default = form.cleaned_data.get("default")
+                if is_default:
+                    try:
+                        default_address = UserDefaultAddress.objects.get(user=request.user)
+                        default_address.address = form.cleaned_data.get("address")
+                        default_address.city = form.cleaned_data.get('city')
+                        default_address.county = form.cleaned_data.get('county')
+                        default_address.postal_code = form.cleaned_data.get('postal_code')
+                        default_address.phone_number = form.cleaned_data.get('phone_number')
+                        default_address.save()
+                    except UserDefaultAddress.DoesNotExist:
+                        default_address = UserDefaultAddress()
+                        default_address.user = request.user
+                        default_address.address = form.cleaned_data.get("address")
+                        default_address.city = form.cleaned_data.get('city')
+                        default_address.county = form.cleaned_data.get('county')
+                        default_address.postal_code = form.cleaned_data.get('postal_code')
+                        default_address.phone_number = form.cleaned_data.get('phone_number')
+                        default_address.save()  
+        except:
+            return HttpResponseRedirect(reverse('cart'))
 
     template = 'orders/order_details.html'
-    context = {'form': form}
+    context = {
+        'form': form,
+        'exists': exists,
+        'default_address': default_address,
+        }
 
     return render(request, template, context)
 
@@ -110,7 +126,7 @@ def checkout(request, **kwargs):
         print(request.POST)
         result = transact({
                 'amount': new_order.final_total,
-                'payment_method_nonce': request.POST['payment_method_nonce'],
+                'payment_method_nonce': request.POST.get('payment_method_nonce', None),
                 'options': {
                     "submit_for_settlement": True
                 }
