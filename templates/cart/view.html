@@ -23,8 +23,26 @@
 
 </table>
 <br/>
+<div class="row">
+    <input type="text" name="coupon_code" class="form-control w-25">
+    <button class="btn btn-secondary" onclick="applyCoupon()">Apply Coupon</button>
+</div>
 
 <a href='{% url "order_details" %}'>Order Summary</a>
+
+
+<script>
+    function applyCoupon(){
+        let coupon_code = document.querySelector('input[name="coupon_code"]').value;
+        console.log(coupon_code);
+        let formData = new FormData();
+        formData.append('coupon_code', coupon_code);
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("POST", '{% url "apply_coupon" %}', true);
+        xhttp.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        xhttp.send(formData);
+    }
+</script>
 
 {% endif %}
 {% endblock %}

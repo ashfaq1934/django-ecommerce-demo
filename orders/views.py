@@ -1,10 +1,11 @@
+from django.http import JsonResponse
 from django.urls import reverse
-from django.shortcuts import render, HttpResponseRedirect, redirect
+from django.shortcuts import render, HttpResponseRedirect, redirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from accounts.models import UserDefaultAddress
 from cart.models import Cart
-from .models import Order, OrderDetails
+from .models import Order, OrderDetails, Coupon
 from .forms import OrderDetailsForm
 from .utils import id_generator, generate_client_token, transact
 
@@ -121,9 +122,15 @@ def checkout(request, **kwargs):
     except Order.DoesNotExist:
         new_order = None
         return HttpResponseRedirect(reverse('cart'))
+    
+    coupon = request.session.get('coupon', None)
+    coupon_discount = request.session.get('coupon_discount', None)
+    total = new_order.final_total
+    if coupon and coupon_discount:
+        total = new_order.final_total / 100 * coupon_discount
 
     result = transact({
-            'amount': new_order.final_total,
+            'amount': total,
             'payment_method_nonce': request.POST.get('payment_method_nonce', None),
             'options': {
                 "submit_for_settlement": True
@@ -132,6 +139,10 @@ def checkout(request, **kwargs):
 
     if result.is_success or result.transaction:
         print('it worked')
+        for item in cart.cartitem_set.all():
+            item.product.stock_levels -= item.quantity
+            item.product.save()
+        return HttpResponseRedirect('/')
 
 
     if new_order.status == "Finished":
@@ -144,3 +155,23 @@ def checkout(request, **kwargs):
         }
     template = "orders/checkout.html"
     return render(request, template, context)
+
+@login_required
+def apply_coupon(request):
+    try:
+        # get the session for a user's cart
+        the_id = request.session['cart_id']
+        cart = Cart.objects.get(id=the_id)
+    except Cart.DoesNotExist:
+        the_id = None
+        return HttpResponse(404, 'Cart does not exist')
+    try:
+        coupon = Coupon.objects.get(code=request.POST.get('coupon_code'))
+        if not coupon.active:
+            return HttpResponse(200, "Coupon is not active")
+        else:
+            request.session['coupon'] = coupon.code
+            request.session['coupon_discount'] = coupon.discount_percentage
+            return JsonResponse({'success': True, 'coupon': coupon.code, 'discount': coupon.discount_percentage})
+    except Coupon.DoesNotExist:
+        return HttpResponse(404, "Coupon does not exist")

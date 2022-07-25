@@ -15,6 +15,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     sub_total = models.DecimalField(default=10.99, max_digits=1000, decimal_places=2)
     tax_total = models.DecimalField(default=0.00, max_digits=1000, decimal_places=2)
+    coupon_used = models.BooleanField(default=False)
     final_total = models.DecimalField(default=10.99, max_digits=1000, decimal_places=2)
     order_id = models.CharField(max_length=120, default="ABC", unique=True)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
@@ -35,3 +36,13 @@ class OrderDetails(models.Model):
 
     def __str__(self):
         return str(self.order)
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=20)
+    discount_percentage = models.IntegerField(default=0)
+    active = models.BooleanField(default=True)
+    num_available = models.IntegerField(default=1)
+    num_used = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.code

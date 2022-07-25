@@ -8,6 +8,7 @@ class Product(models.Model):
     updated = models.DateTimeField(auto_now_add=False, auto_now=True)
     active = models.BooleanField(default=True)
     slug = models.SlugField(unique=True, default=title)
+    stock_levels = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
@@ -45,5 +46,3 @@ class Variation(models.Model):
 
     def __str__(self):
         return self.title
-
-
